@@ -9,12 +9,12 @@ applicants_count_table <- table(patents$applicant)
 # Define UI for app
 ui <- fluidPage(
   navbarPage("Menu",
-             tabPanel("Kraje",
+             tabPanel("Countries",
                       sidebarLayout(
                         sidebarPanel(
-                          dateRangeInput("countryDateRange", "Zakres dat", 
+                          dateRangeInput("countryDateRange", "Date range", 
                                          min=min(patents$pub_date), start=min(patents$pub_date),
-                                         language="pl", separator="do"
+                                         language="en", separator="to"
                           ),
                           width = 2
                         ),
@@ -24,10 +24,10 @@ ui <- fluidPage(
                         )
                       )
              ),
-             tabPanel("Zgłaszający",
+             tabPanel("Applicants",
                       sidebarLayout(
                         sidebarPanel(
-                          sliderInput("applicantCountSlider", "Liczba opublikowanych patentów",
+                          sliderInput("applicantCountSlider", "Number of published patents",
                                       min=1, max=max(applicants_count_table),
                                       value=c(10, max(applicants_count_table)), step=1
                           ),
@@ -39,17 +39,17 @@ ui <- fluidPage(
                         )
                       )
              ),
-             tabPanel("Rocznie",
+             tabPanel("Annual",
                       sidebarLayout(
                         sidebarPanel(
-                          sliderInput("annualDateRange", "Zakres lat",
+                          sliderInput("annualDateRange", "Years range",
                                       min=as.numeric(format(min(patents$pub_date), '%Y')), max=as.numeric(format(max(patents$pub_date), '%Y')),
                                       value=c(as.numeric(format(min(patents$pub_date), '%Y')), max=as.numeric(format(max(patents$pub_date), '%Y'))),
                                       sep='', step=1
                           ),
-                          sliderInput("annualCountSlider", "Liczba wszystkich opublikowanych patentów (niezależnie od daty)",
+                          sliderInput("annualCountSlider", "Total number of published patents (date independent)",
                                       min=1, max=max(applicants_count_table),
-                                      value=c(10, max(applicants_count_table)), step=1
+                                      value=c(36, max(applicants_count_table)), step=1
                           ),
                           width = 2
                         ),
@@ -59,14 +59,14 @@ ui <- fluidPage(
                         )
                       )
              ),
-             tabPanel("Liczba wynalazców",
+             tabPanel("Inventors",
                       sidebarLayout(
                         sidebarPanel(
-                          sliderInput("inventorCountSlider", "Minimalna liczba opublikowanych patentów (niezależnie od biura patentowego)",
+                          sliderInput("inventorCountSlider", "Minimum number of patents (patent office independent)",
                                       min=1, max=max(applicants_count_table),
                                       value=10, step=1
                           ),
-                          radioButtons("inventorCountryButtons", "Biuro patentowe",
+                          radioButtons("inventorCountryButtons", "Patent office",
                                              c("All" = "",
                                                "World Intellectual Property Organisation" = "WO",
                                                "European Patent Office" = "EP",
@@ -95,7 +95,7 @@ server <- function(input, output) {
     patents_country <- patents[patents$pub_date >= input$countryDateRange[1] & patents$pub_date <= input$countryDateRange[2], ]
     p_country <- ggplot(patents_country, aes(y=forcats::fct_rev(forcats::fct_infreq(stringr::str_wrap(country_name, 50)))))
     p_country +  geom_bar() + geom_text(stat = "count", aes(label = after_stat(count)), hjust = -1) +
-      labs(x="Liczba zarejestrowanych patentów", y="Kraj", title="Liczba patentów z podziałem na kraje")
+      labs(x="Number of registered patents", y="Country", title="Number of registered patents by country")
   })
   
   output$applicantPlot <- renderPlot({
@@ -104,7 +104,7 @@ server <- function(input, output) {
       ]))
     p_corp <- ggplot(patents_applicant, aes(y=forcats::fct_rev(forcats::fct_infreq(stringr::str_wrap(applicant, 50)))))
     p_corp +  geom_bar() + geom_text(stat = "count", aes(label = after_stat(count)), hjust = -1) +
-      labs(x="Liczba zarejestrowanych patentów", y="Zgłaszający", title="Liczba patentów z podziałem na zgłaszających")
+      labs(x="Number of registered patents", y="Applicant", title="Number of registered patents by applicant")
   })
   
   output$annualPlot <- renderPlot({
@@ -114,7 +114,7 @@ server <- function(input, output) {
     patents_annual$year <- format(patents_annual$pub_date,'%Y')
     patents_annual <- patents_annual[patents_annual$year >= input$annualDateRange[1] & patents_annual$year <= input$annualDateRange[2], ]
     ggplot(patents_annual, aes(x=year, fill=applicant)) + geom_bar(colour="black", width=0.5) + 
-      labs(x="Rok", y="Liczba patentów", title="Roczna liczba nowych patentów", fill="Zgłaszający") +
+      labs(x="Year", y="Number of patents", title="Annual number of new patents", fill="Applicant") +
       theme(axis.text.x = element_text(angle = 40))
   })
   
@@ -128,7 +128,7 @@ server <- function(input, output) {
     }
     p_corp <- ggplot(patents_inventor, aes(x=forcats::fct_rev(forcats::fct_infreq(applicant, 50)), y=inventors_nb))
     p_corp +  geom_boxplot() + coord_flip() + scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
-      labs(x="Zgłaszający", y="Liczba wynalazców", title="Liczba wynalazców przypisanych do patentu")
+      labs(x="Applicant", y="Number of inventors", title="Number of inventors per patent, by applicant")
   })
   
 }
