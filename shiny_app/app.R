@@ -95,7 +95,8 @@ server <- function(input, output) {
     patents_country <- patents[patents$pub_date >= input$countryDateRange[1] & patents$pub_date <= input$countryDateRange[2], ]
     p_country <- ggplot(patents_country, aes(y=forcats::fct_rev(forcats::fct_infreq(stringr::str_wrap(country_name, 50)))))
     p_country +  geom_bar() + geom_text(stat = "count", aes(label = after_stat(count)), hjust = -1) +
-      labs(x="Number of registered patents", y="Country", title="Number of registered patents by country")
+      labs(x="Number of registered patents", y="Country", 
+           title=sprintf("Number of registered patents by country, from %s to %s", input$countryDateRange[1], input$countryDateRange[2]))
   })
   
   output$applicantPlot <- renderPlot({
@@ -128,7 +129,7 @@ server <- function(input, output) {
     }
     p_corp <- ggplot(patents_inventor, aes(x=forcats::fct_rev(forcats::fct_infreq(applicant, 50)), y=inventors_nb))
     p_corp +  geom_boxplot() + coord_flip() + scale_y_continuous(breaks = scales::pretty_breaks(n = 20)) +
-      labs(x="Applicant", y="Number of inventors", title="Number of inventors per patent, by applicant")
+      labs(x="Applicant", y="Number of inventors", title=sprintf("Number of inventors per patent, by applicant %s", input$inventorCountryButtons))
   })
   
 }
